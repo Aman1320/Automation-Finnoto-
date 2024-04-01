@@ -1,5 +1,6 @@
 
 import {test,expect, Locator} from '@playwright/test';
+import { emailcheck, emptypassword, eyebutton, loading } from '../Helper/signup.helper';
 require('dotenv').config();
 const username = process.env.USERNAMES;
 const password1 = process.env.PASSWORD;
@@ -55,10 +56,7 @@ test('login to AP',async({page}) =>{
     {
       console.log("password not found");
     } 
-     const uilocator = '//div[contains(@class,"cursor-pointer")]';
-     
-      await page.locator(uilocator).click();
-      await expect(password).toHaveAttribute("type", "text");
+     await eyebutton(page,password);
     await submit.click();
     const AP =page.locator("#pro-2")
 
@@ -236,15 +234,7 @@ test('Login via Phone',async({page})=>{
 
 })
 test('Signup page',async({page}) =>{
-  await page.goto('https://devfn.vercel.app/login');
-  const signup= page.getByRole('link',{name :'Sign Up'})
-  await expect(signup).toBeVisible();
-  await signup.click();
-  await expect(page).toHaveURL('https://devfn.vercel.app/signup')
-  const name= page.locator('[id="name"]')
-  const email= page.locator('[id="username"]')
-  const password= await page.locator('[id="password"]')
-  const confpassword=await  page.locator('[id= "confirmPassword"]')
+  const {name,email,password,confpassword}=await loading(page);
   
   const next= page.getByRole('button',{name:'Next →'})
    await next.click()
@@ -296,15 +286,7 @@ test('Validatemail',async({page})=>{
   const next= page.getByRole('button',{name:'Next →'})
    await next.click()
   // Define a regular expression pattern to match against an email address
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  const error1=page.getByText('Email must be a valid email')
-  // Verify that the entered email matches the regular expression pattern
- // expect(emailPattern.test(enteredEmail)).toBeFalsy();
-  if(emailPattern.test(enteredEmail)==true)
-     await expect(error1).toBeHidden();
-  else
-      await expect(error1).toBeVisible()
+  await emailcheck(page,enteredEmail);
 });
 //
 test('Validatname',async({page})=>{
@@ -331,12 +313,8 @@ test('TSU004',async({page})=>{
   const password=  page.locator('[id="password"]');
 //empty password
   const next= page.getByRole('button',{name:'Next →'})
-    const error3=page.getByText('Password is required',{exact:true})
    await next.click()
-   if(await password.inputValue() === '')
- {await expect(error3).toBeVisible();
-    await expect(next).toBeDisabled();
-}
+   await emptypassword(page,next,password);
 //fill password <6 length
   await password.fill("11111");
   const passwordValue = await password.inputValue();
