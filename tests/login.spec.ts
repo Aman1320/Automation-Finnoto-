@@ -1,18 +1,16 @@
 
 import {test,expect, Locator} from '@playwright/test';
-import { emailcheck, emptypassword, eyebutton, loading } from '../Helper/signup.helper';
+import { emailcheck, emptypassword, loading,loginfo } from '../Helper/signup.helper';
+import { gotoAP, passworderror ,urlink,eyebutton, locate, fillusernanme, fillpassowrd, flowcheck, errors} from '../Helper/Login Helper/login.helper';
 require('dotenv').config();
 const username = process.env.USERNAMES;
 const password1 = process.env.PASSWORD;
-//console.log(process.env)
+//Interface
 
 test('login to AP',async({page}) =>{
-    await page.goto('https://devfn.vercel.app/login');
+    await page.goto(urlink.login);
     // check signup link  and signin with google
-    const signup= page.getByRole('link',{name :'Sign Up'})
-    await expect(signup).toBeVisible();
-    const google= page.getByRole('button',{name :'with Google'})
-    await expect(google).toBeVisible();
+    await locate(page);
    //click without email error message
      const next= page.getByRole('button',{name:'Next →'})
      await next.click()
@@ -21,24 +19,14 @@ test('login to AP',async({page}) =>{
      
   //fill username
    const email= page.locator('[id="username"]')
-   if (username) {
-    await email.fill(username);
-  } else {
-    throw Error('Username not found');
-  }
+   await fillusernanme(page,email)
     await next.click()
 
     //next page
     await expect(page).toHaveURL('https://devfn.vercel.app/login?email=testuser500%40finnoto.com&referrer=')
     
     //submit without password error
-    const submit = page.getByRole('button',{name:'Submit'})
-    await submit.click();
-    const password: Locator= page.getByPlaceholder("password")
-    
-    const message1=page.getByText('Password is required')
-     await expect(message1).toBeVisible();
-     await expect(submit).toBeDisabled();
+    const {password,submit}=await passworderror(page);
     //forgoconsole.log(forget)t password link 
     const forget= page.getByRole('link',{name :"Forgot Password?"})
     await expect(forget).toBeVisible();
@@ -48,41 +36,25 @@ test('login to AP',async({page}) =>{
      const error1=page.getByText('Invalid username or password..')
      await expect(error1).toBeVisible();
      //fill password then move to AP
-     if(password1)
-    {
-      await password.fill(password1)
-    }
-    else
-    {
-      console.log("password not found");
-    } 
-     await eyebutton(page,password);
-    await submit.click();
-    const AP =page.locator("#pro-2")
-
-    await AP.click();
-    await expect(page).toHaveURL('https://devfn.vercel.app/e/f')
+    await fillpassowrd(page,password);
+    //check eye button
+    await eyebutton(page,password,submit);
+    //move to AP
+    await gotoAP(page,urlink);
   
 }
 
 );
 test('Login to EP',async({page}) =>{
-    await page.goto('https://devfn.vercel.app/login');
-    const email= await page.locator('[id="username"]').fill("testuser500@finnoto.com")
+    await page.goto(urlink.login);
+    const email= await page.locator('[id="username"]')
+    await fillusernanme(page,email)
     const next= page.getByRole('button',{name:'Next →'})
     await next.click()
 
-    await expect(page).toHaveURL('https://devfn.vercel.app/login?email=testuser500%40finnoto.com&referrer=')
+    await expect(page).toHaveURL(urlink.login+'?email='+'testuser500%40finnoto.com'+'&referrer=')
     const password: Locator=  page.getByPlaceholder("password")
-    if(password1)
-    {
-      await password.fill(password1)
-    }
-    else
-    {
-      console.log("password not found");
-    } 
-    
+    await fillpassowrd(page,password)
     //see password
     //const seek=await page.locator("class=['input-password-icon']")
     //await seek.click()
@@ -93,50 +65,32 @@ test('Login to EP',async({page}) =>{
 
     const EP=page.locator('#pro-1')
     await EP.click();
-     await expect(page).toHaveURL('https://devfn.vercel.app/e/e')
+     await expect(page).toHaveURL(urlink.EP)
 }
 
 );
 test('forget  password',async({page}) =>{
-  await page.goto('https://devfn.vercel.app/login');
+  await page.goto(urlink.login);
   const email= await page.locator('[id="username"]').fill("testuser500@finnoto.com")
   const next= page.getByRole('button',{name:'Next →'})
   await next.click()
 
   await expect(page).toHaveURL('https://devfn.vercel.app/login?email=testuser500%40finnoto.com&referrer=')
   
-  const forget= page.getByRole('link',{name :"Forgot Password?"})
-  await forget.click()
-  await expect(page).toHaveURL('https://devfn.vercel.app/forgot-password?email=testuser500@finnoto.com')
-  //back from forget
-  const back= page.getByRole('button',{name:'Back'})
-  
-await back.click()
-await expect(page).toHaveURL('https://devfn.vercel.app/login?email=testuser500%40finnoto.com&referrer=')
- //again on forget
-await forget.click()
-await next.click()
-await back.click()
-await expect(page).toHaveURL('https://devfn.vercel.app/login?email=testuser500%40finnoto.com&referrer=')
-  
+  await flowcheck(page,next);
 }
 
 );
 test('reset button',async({page}) =>{
-  await page.goto('https://devfn.vercel.app/login');
+  await page.goto(urlink.login);
   const email= await page.locator('[id="username"]')
-  if (username) {
-    await email.fill(username);
-  } else {
-    console.error('Username not found');
-  }
+  await fillusernanme(page,email);
   const next= page.getByRole('button',{name:'Next →'})
   await next.click()
-
   await expect(page).toHaveURL('https://devfn.vercel.app/login?email=testuser500%40finnoto.com&referrer=')
   const resetlocator='//button[contains(@class,"link")]';
   await page.locator(resetlocator).click();
-  await expect(page).toHaveURL('https://devfn.vercel.app/login')
+  await expect(page).toHaveURL(urlink.login)
 }
 );
 test('toast error',async({page}) =>{
@@ -147,14 +101,7 @@ test('toast error',async({page}) =>{
 
   await expect(page).toHaveURL('https://devfn.vercel.app/login?email=testuser500%40aman.com&referrer=')
   const password: Locator= page.getByPlaceholder("password")
-  if(password1)
-    {
-      await password.fill(password1)
-    }
-    else
-    {
-      console.log("password not found");
-    } 
+  await fillpassowrd(page,password)
   
  const submit = page.getByRole('button',{name:'Submit'})
  await submit.click();
@@ -238,11 +185,7 @@ test('Signup page',async({page}) =>{
   
   const next= page.getByRole('button',{name:'Next →'})
    await next.click()
-  const error1=page.getByText('name is required')
-  const error2=page.getByText('email is required')
-  const error3=page.getByText('Password is required',{exact:true})
-  //const err=page.locator('.py-1 label label-text-alt text-error')
-  const error4=page.getByText('Confirm Password is required',{exact:true})
+   const {error1,error2,error3,error4}=await errors(page)
    
   if(await name.inputValue() === '')
    {await expect(error1).toBeVisible();
