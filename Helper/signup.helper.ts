@@ -1,6 +1,11 @@
 import {expect, Locator, Page} from '@playwright/test';
 
-
+export interface loginfo {
+  name: string;
+  password: string;
+  mail:string;
+  conf:string;
+}
  export async function attemptSignIn(page: Page, password: Locator) {
     for (let i = 0; i <= 5; i++) {
         await password.fill("1234567" + i);
@@ -9,17 +14,18 @@ import {expect, Locator, Page} from '@playwright/test';
         await page.waitForTimeout(1000); // Wait for error message to appear
     }
 }
-export async function filldetails(page :Page)
+
+export async function filldetails(page :Page,data:loginfo)
 {
     const name= page.locator('[id="name"]')
     const email= page.locator('[id="username"]')
     const password= page.locator('[id="password"]')
     const confpassword= page.locator('[id= "confirmPassword"]')
    
-   await name.fill("aman")
-   await email.fill("aman@gmail.com")
-   await password.fill("12345678")
-   await confpassword.fill("12345678")
+   await name.fill(data.name)
+   await email.fill(data.mail)
+   await password.fill(data.password)
+   await confpassword.fill(data.conf)
 }
 export async function emptypassword(page:Page,next:Locator,password:Locator)
 {
@@ -29,13 +35,7 @@ export async function emptypassword(page:Page,next:Locator,password:Locator)
     await expect(next).toBeDisabled();
 }
 }
-export async function eyebutton(page:Page,password:Locator)
-{
-    const uilocator = '//div[contains(@class,"cursor-pointer")]';
-     
-      await page.locator(uilocator).click();
-      await expect(password).toHaveAttribute("type", "text");
-}
+
 export async function emailcheck(page:Page,enteredEmail:string) {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
