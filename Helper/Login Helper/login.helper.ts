@@ -1,14 +1,16 @@
 import {expect, Locator, Page} from '@playwright/test';
 //inteface
+require('dotenv').config();
 const username=process.env.USERNAMES;
 const password1=process.env.PASSWORD;
 export interface url{
     AP:string;
     EP:string;
     login:string;
+    department:string;
     Signupurl?:string;
 }
-export const urlink:url={AP:'https://devfn.vercel.app/e/f',EP:'https://devfn.vercel.app/e/e',login:'https://devfn.vercel.app/login'}
+export const urlink:url={AP:'https://devfn.vercel.app/e/f',EP:'https://devfn.vercel.app/e/e',login:'https://devfn.vercel.app/login',department:'https://devfn.vercel.app/e/f/departments'}
 
 export async function fillusernanme(page:Page,email:Locator)
 {
@@ -75,4 +77,28 @@ await next.click()
 await back.click()
 await expect(page).toHaveURL('https://devfn.vercel.app/login?email=testuser500%40finnoto.com&referrer=')
   
+}
+export async function errors(page:Page)
+{
+    const error1=page.getByText('name is required')
+  const error2=page.getByText('email is required')
+  const error3=page.getByText('Password is required',{exact:true})
+  //const err=page.locator('.py-1 label label-text-alt text-error')
+  const error4=page.getByText('Confirm Password is required',{exact:true})
+
+  return {error1,error2,error3,error4};
+}
+
+export async function directlogin(page:Page)
+{
+  await page.goto(urlink.login);
+  const email= page.locator('[id="username"]')
+   await fillusernanme(page,email)
+   const next= page.getByRole('button',{name:'Next →'})
+     await next.click()
+     const password: Locator=  page.getByPlaceholder("password")
+   await fillpassowrd(page,password);
+   const submit = page.getByRole('button',{name:'Submit'})
+   await submit.click();
+   await gotoAP(page,urlink);
 }
