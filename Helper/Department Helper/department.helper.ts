@@ -14,8 +14,14 @@ await expect(namefielderror).toBeVisible();
 export async function locatefield(page:Page)
 {
 const Name=page.locator('[id="name"]');
-const parentdept=page.locator('.css-1xc3v61-indicatorContainer')
-const deptManager=page.locator('. css-1xc3v61-indicatorContainer')
-
+const parentdept=page.locator('input[id:"react-select-6-input"]')
+const deptManager=page.locator('input[id:"react-select-7-input"]')
 return {Name,parentdept,deptManager};
+}
+export async function checkselected(tab:Locator)
+{
+    const abc=tab.locator('//button[text()="All"]')
+await abc.click();
+ const iSelected= await abc.getAttribute('aria-selected');
+ expect(iSelected).toEqual('true'); 
 }
