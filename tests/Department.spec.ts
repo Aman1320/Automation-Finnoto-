@@ -1,4 +1,4 @@
-import {expect, test} from '@playwright/test';
+import {expect, selectors, test} from '@playwright/test';
 import { urlink,directlogin } from '../Helper/Login Helper/login.helper';
 import { checkselected, emptyfield, locatefield } from '../Helper/Department Helper/department.helper';
 import { error } from 'console';
@@ -136,24 +136,87 @@ test("Status", async({page})=>{
 
 // const Activenumber = await page.$$('button:has-text("Active")'); count all button with active
 
-  const activeButton = page.locator(' div:nth-child(3) > div:nth-child(6)>.centralize >.btn'); 
-  
-
-// Get the name "Aman" from the table row
-const tableRow = await activeButton.locator('div.table-row ');
-
-// Get the name "Aman" from the table row
-const nameElement = await tableRow.locator('div.table-cell:nth-child(2) a');
-const name = await nameElement.textContent();
-expect(name).toEqual('Aman');
+const row = page.locator("div.table-row", { has: page.locator('text="4"') });
+const name=await row.locator('div:nth-child(2)').textContent();
+const activeButton=await row.locator('button',{hasText:'Active'})
     // Click on the active button
     await activeButton.click();
   
 const toastElement = await page.waitForSelector('.toast-content'); 
  const Message = await toastElement.textContent();
 expect(Message).toEqual('Status Changed')
-
 });
+test("ApprovalManager",async({page})=>{
+  await directlogin(page);
+  await page.goto(urlink.department)
 
-  
+  const row = page.locator("div.table-row", { has: page.locator('text="1"') });
+  const Approval=await row.getByRole("link", { name: "User",exact:true })
+  await Approval.click();
+  await expect(page).toHaveURL('https://devfn.vercel.app/e/f/employee/14132')
+})
+test("ParentDept",async ({page})=>{
+  await directlogin(page);
+  await page.goto(urlink.department)
+
+  const row = page.locator("div.table-row", { has: page.locator('text="2"') });
+  const Approval=await row.getByRole("link", { name: "Backend",exact:true})
+  await Approval.click();
+  const details=page.getByText("Department Detail")
+  await expect(details).toBeTruthy;
+
+}) 
+test("Manager mail",async({page})=>{
+  await directlogin(page);
+  await page.goto(urlink.department)
+
+  const row = page.locator("div.table-row", { has: page.locator('text="5"') });
+  const mail=row.getByRole("link", { name: "testuser500@finnoto.com",exact:true})
+  await mail.click();
+  const details=page.getByText("testuser500@finnoto.com")
+  await expect(details).toBeTruthy;
+})
+test("Edit",async({page})=>{
+  await directlogin(page);
+  await page.goto(urlink.department)
+  const row = page.locator("div.table-row", { has: page.locator('text="9"') });
+  const edit=await row.locator("div:nth-child(8)")
+ await edit.hover();
+  const tooltipText = await page.getByText('Edit');
+  expect(tooltipText).toBeTruthy();
+
+  //cick on edit
+  await edit.click();
+//Locate the dialog box
+const inputname=await row.locator("div:nth-child(2)").textContent();
+const inputaprroval=await row.locator("div:nth-child(3)").textContent();
+const inputdept=await row.locator("div:nth-child(5)").textContent();
+
+  const dilagbox=page.locator('//div[@role="dialog"] ')
+  const deprtName= dilagbox.getByText("Edit Department",{exact:true})
+  expect(deprtName).toBeTruthy();
+//Check the data in name is already there
+  const name=await dilagbox.locator("[id='name']").inputValue()
+  expect(name).toEqual(inputname)
+//check manager id data is filled
+ const inputField1 = await page.locator('input[name="manager_id"]');
+ const div1=await dilagbox.locator("div.text-sm",{has:inputField1})
+
+const value = await div1.innerText();
+ expect(inputaprroval).toContain(value);
+
+//check parent department is filled
+const inputField2 = await page.locator('input[name="parent_id"]');
+const div2=await dilagbox.locator("div.text-sm",{has:inputField2})
+
+// Get the value of the input field
+const value2 = await div2.innerText();
+expect(inputdept).toContain(value2);
+
+//check for "Close button"
+//dialog
+const close=dilagbox.locator('div.close-dialog');
+await close.click();
+expect(dilagbox).toBeHidden();
+})
 
