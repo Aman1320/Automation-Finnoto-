@@ -215,8 +215,91 @@ expect(inputdept).toContain(value2);
 
 //check for "Close button"
 //dialog
-const close=dilagbox.locator('div.close-dialog');
+const close=dilagbox.locator('div.dialog-close');
 await close.click();
 expect(dilagbox).toBeHidden();
 })
+test("Hover",async({page})=>{
+  await directlogin(page);
+  await page.goto(urlink.department)
+  //Check the configure button available 
 
+  const configure=await page.locator('//button[@data-title="Configure Table"]')
+  await configure.hover();
+  const tooltipText = page.getByText('Configure Table');
+
+  expect(tooltipText).toBeTruthy();
+//click the configure button
+await configure.click();
+const dialog1=await page.locator('//div[@role="dialog"]')
+const reset =dialog1.getByRole('link',{ name:'Reset'});
+await reset.click()
+
+const search=await dialog1.locator('input[placeholder="Search column name"]')
+  //Check the download button
+  await expect(search).toBeVisible();
+
+
+  const download=await page.locator('//button[@data-title="Configure Table"]')
+  await download.hover();
+  const text = page.getByText('Download CSV');
+
+  expect(text).toBeTruthy();
+})
+
+test("Table head",async({page})=>{
+  await directlogin(page);
+  await page.goto(urlink.department)
+  //check the table header
+  const head=page.locator('.table-header-group ')
+
+//check name has ascending and descending feature
+  const name= head.locator('button',{hasText:"Name"});
+  await name.click();
+  const asc=page.getByText("Ascending");
+  const desc=page.getByText("Descending")
+await expect(asc).toBeVisible();
+await expect(desc).toBeVisible();
+
+//check Approval manager has ascending and descending feature
+const Approval= head.locator('button',{hasText:"Approval Manager"});
+  await Approval.click();
+  await expect(asc).toBeVisible();
+await expect(desc).toBeVisible();
+
+//check parent department has ascending and descending feature
+const parent= head.locator('button',{hasText:"Parent Department"});
+  await parent.click();
+  await expect(asc).toBeVisible();
+await expect(desc).toBeVisible();
+
+//check mail manager has ascending and descending feature
+const mail= head.locator('button',{hasText:"Manager Email"});
+  await mail.click();
+  await expect(asc).toBeVisible();
+await expect(desc).toBeVisible();
+
+//check Added at has ascending and descending feature
+const Added= head.locator('button',{hasText:"Added At"});
+  await Added.click();
+  await expect(asc).toBeVisible();
+await expect(desc).toBeVisible();
+})
+
+test("Search",async({page})=>{
+  await directlogin(page);
+  await page.goto(urlink.department)
+
+  const search=page.locator('input[placeholder="Search ( min: 3 characters )"]')
+  await expect(search).toBeVisible();
+
+});
+
+test ("Filter", async({page})=>{
+  await directlogin(page);
+  await page.goto(urlink.department)
+
+  const loc=page.locator('div.flex flex-wrap > button')
+  await loc.click();
+  
+})
