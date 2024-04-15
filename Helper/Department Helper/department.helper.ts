@@ -25,3 +25,39 @@ await abc.click();
  const iSelected= await abc.getAttribute('aria-selected');
  expect(iSelected).toEqual('true'); 
 }
+
+export async function selectrow(page:Page,no:string)
+{
+  return page.locator('div.table-cell > div > p:has-text(no)');
+}
+
+export async function checkname(dilagbox:Locator,txt:string)
+{
+    const deprtName= dilagbox.getByText(txt,{exact:true})
+    expect(deprtName).toBeTruthy();
+}
+export async function  checkrow(head:Locator,txt:string,page:Page) {
+    const name= head.locator('button',{hasText:"Name"});
+    await name.click();
+    const asc=page.getByText("Ascending");
+    const desc=page.getByText("Descending")
+  await expect(asc).toBeVisible();
+  await expect(desc).toBeVisible();
+    
+}
+export async function closebtn(dilagbox:Locator)
+{
+    const close=dilagbox.locator('div.close-dialog');
+    await close.click();
+    expect(dilagbox).toBeHidden();
+}
+export async function dataclosed(page:Page) {
+    const divElements = await page.$$eval('div[data-state]', (elements) => {
+
+        elements.map((index) => {
+         const dataState = index.getAttribute('data-state');
+         expect(dataState).toContainEqual("Closed")
+       });
+     });
+    
+}

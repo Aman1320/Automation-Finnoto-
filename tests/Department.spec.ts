@@ -1,7 +1,7 @@
 import {expect, selectors, test} from '@playwright/test';
 import { urlink,directlogin } from '../Helper/Login Helper/login.helper';
-import { checkselected, emptyfield, locatefield } from '../Helper/Department Helper/department.helper';
-import { error } from 'console';
+import { checkname, checkrow, checkselected, closebtn, dataclosed, emptyfield, locatefield, selectrow } from '../Helper/Department Helper/department.helper';
+import { error, table } from 'console';
 require('dotenv').config();
 const username = process.env.USERNAMES;
 const password1 = process.env.PASSWORD;
@@ -53,7 +53,7 @@ await checkselected(tab);
 test("Details",async ({page})=>{
   await directlogin(page);
   await page.goto(urlink.department)
-  const Sno= page.locator('div.table-cell > div > p:has-text("5")');
+  const Sno= await selectrow(page,"5");
 
 //Successful shows the hover text
   await Sno.hover();
@@ -61,25 +61,19 @@ test("Details",async ({page})=>{
   expect(tooltipText).toBeTruthy();
 //on click
   await Sno.click();
-// check the parse value in thedialog box. 
-//default active
+
 //check all the field inside the Dialog box
 
     const dilagbox=page.locator('//div[@role="dialog"] ')
-    const deprtName= dilagbox.getByText("Departments",{exact:true})
-    expect(deprtName).toBeTruthy();
-    const addedat= dilagbox.getByText("Added at",{exact:true})
-    expect(addedat).toBeTruthy;
-    const aprrovalManager=dilagbox.getByText("Approval Manager",{exact:true})
-    expect(aprrovalManager).toBeTruthy();
-    const mail=dilagbox.getByText("Manager Email",{exact:true})
-    expect(mail).toBeTruthy;
-    const name=dilagbox.getByText("Name",{exact:true})
-    expect(name).toBeTruthy;
-    const parent=dilagbox.getByText("Parent Department",{exact:true})
-    expect(parent).toBeTruthy;
-    const status=dilagbox.getByText("Status",{exact:true})
-    expect(status).toBeTruthy;
+   
+    await checkname(dilagbox,"Department")
+    await checkname(dilagbox,"Added at")
+    await checkname(dilagbox,"Approval Manager")
+    await checkname(dilagbox,"Manager Email")
+    await checkname(dilagbox,"Name")
+    await checkname(dilagbox,"Parent Department")
+    await checkname(dilagbox,"Status")
+    
 
 //check for active button
 
@@ -90,16 +84,12 @@ test("Details",async ({page})=>{
 //check for "sort by name" is visible
     const sort=dilagbox.locator("//span[text()='Sort By Name']");
     await sort.click();
-    const asc=dilagbox.getByText("Ascending",{exact:true})
-    expect(asc).toBeTruthy;
-    const dsc=dilagbox.getByText("Descending",{exact:true})
-    expect(dsc).toBeTruthy;
+    await checkname(dilagbox,"Ascending")
+    await checkname(dilagbox,"Descending")
 
 //check for "Close button"
-//dialog
-    const close=dilagbox.locator('div.close-dialog');
-    await close.click();
-    expect(dilagbox).toBeHidden();
+
+  await closebtn(dilagbox);
 
 })
 test("Name",async ({page})=>{
@@ -119,13 +109,7 @@ test("Closed",async({page})=>{
   await directlogin(page);
   await page.goto(urlink.department)
   
-  const divElements = await page.$$eval('div[data-state]', (elements) => {
-
-     elements.map((index) => {
-      const dataState = index.getAttribute('data-state');
-      expect(dataState).toContainEqual("Closed")
-    });
-  });
+  await dataclosed(page)
 })
 test("Status", async({page})=>{
   await directlogin(page);
@@ -193,8 +177,7 @@ const inputaprroval=await row.locator("div:nth-child(3)").textContent();
 const inputdept=await row.locator("div:nth-child(5)").textContent();
 
   const dilagbox=page.locator('//div[@role="dialog"] ')
-  const deprtName= dilagbox.getByText("Edit Department",{exact:true})
-  expect(deprtName).toBeTruthy();
+  await checkname(dilagbox,"Edit Department")
 //Check the data in name is already there
   const name=await dilagbox.locator("[id='name']").inputValue()
   expect(name).toEqual(inputname)
@@ -219,12 +202,14 @@ const close=dilagbox.locator('div.dialog-close');
 await close.click();
 expect(dilagbox).toBeHidden();
 })
+
+
 test("Hover",async({page})=>{
   await directlogin(page);
   await page.goto(urlink.department)
   //Check the configure button available 
 
-  const configure=await page.locator('//button[@data-title="Configure Table"]')
+  const configure=page.locator('//button[@data-title="Configure Table"]')
   await configure.hover();
   const tooltipText = page.getByText('Configure Table');
 
@@ -235,12 +220,12 @@ const dialog1=await page.locator('//div[@role="dialog"]')
 const reset =dialog1.getByRole('link',{ name:'Reset'});
 await reset.click()
 
-const search=await dialog1.locator('input[placeholder="Search column name"]')
+const search= dialog1.locator('input[placeholder="Search column name"]')
   //Check the download button
   await expect(search).toBeVisible();
 
 
-  const download=await page.locator('//button[@data-title="Configure Table"]')
+  const download= page.locator('//button[@data-title="Configure Table"]')
   await download.hover();
   const text = page.getByText('Download CSV');
 
@@ -254,36 +239,19 @@ test("Table head",async({page})=>{
   const head=page.locator('.table-header-group ')
 
 //check name has ascending and descending feature
-  const name= head.locator('button',{hasText:"Name"});
-  await name.click();
-  const asc=page.getByText("Ascending");
-  const desc=page.getByText("Descending")
-await expect(asc).toBeVisible();
-await expect(desc).toBeVisible();
-
+ await checkrow(head,"Name",page);
+ 
 //check Approval manager has ascending and descending feature
-const Approval= head.locator('button',{hasText:"Approval Manager"});
-  await Approval.click();
-  await expect(asc).toBeVisible();
-await expect(desc).toBeVisible();
+await checkrow(head,"Approval Manager",page);
 
 //check parent department has ascending and descending feature
-const parent= head.locator('button',{hasText:"Parent Department"});
-  await parent.click();
-  await expect(asc).toBeVisible();
-await expect(desc).toBeVisible();
+await checkrow(head,"Parent Department",page);
 
 //check mail manager has ascending and descending feature
-const mail= head.locator('button',{hasText:"Manager Email"});
-  await mail.click();
-  await expect(asc).toBeVisible();
-await expect(desc).toBeVisible();
+await checkrow(head,"Manager Email",page);
 
 //check Added at has ascending and descending feature
-const Added= head.locator('button',{hasText:"Added At"});
-  await Added.click();
-  await expect(asc).toBeVisible();
-await expect(desc).toBeVisible();
+await checkrow(head,"Added At",page);
 })
 
 test("Search",async({page})=>{
