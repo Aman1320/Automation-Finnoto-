@@ -11,6 +11,10 @@ const namefielderror=page.getByText("Name is required")
 await expect(namefielderror).toBeVisible();
 
 }
+export async function getButton(page:Page,txt:String)
+{
+  return page.getByRole('button', { name: `${txt}` })
+}
 export async function locatefield(page:Page)
 {
 const Name=page.locator('[id="name"]');
@@ -18,9 +22,10 @@ const parentdept=page.locator('input[id:"react-select-6-input"]')
 const deptManager=page.locator('input[id:"react-select-7-input"]')
 return {Name,parentdept,deptManager};
 }
-export async function checkselected(tab:Locator)
+export async function checkselected(page:Page,tab:string)
 {
-    const abc=tab.locator('//button[text()="All"]')
+  const tablistContainer=page.locator('//div[@role="tablist"]')
+    const abc=tablistContainer.locator(`//button[text()=${tab}]`)
 await abc.click();
  const iSelected= await abc.getAttribute('aria-selected');
  expect(iSelected).toEqual('true'); 
@@ -28,7 +33,7 @@ await abc.click();
 
 export async function selectrow(page:Page,no:string)
 {
-  return page.locator('div.table-cell > div > p:has-text(no)');
+  return page.locator(`div.table-cell > div > p:has-text(${no})`);
 }
 
 export async function checkname(dilagbox:Locator,txt:string)
@@ -36,8 +41,31 @@ export async function checkname(dilagbox:Locator,txt:string)
     const deprtName= dilagbox.getByText(txt,{exact:true})
     expect(deprtName).toBeTruthy();
 }
-export async function  checkrow(head:Locator,txt:string,page:Page) {
-    const name= head.locator('button',{hasText:"Name"});
+/*export async function checkname(page:Page,txt:string[])
+{
+  const dialog=await dialogContainer(page)
+  for(let i in txt )
+   { const deprtName=dialog.getByText(i,{exact:true})
+    expect(deprtName).toBeTruthy();
+}
+} */
+export async function dialogContainer(page:Page){
+  return page.locator('//div[@role="dialog"] ')
+}
+export async function addDept(page:Page) {
+  await page.locator('//button[contains(@data-title,"ef_add_department")]').click();
+}
+export async function locateActive(page:Page) {
+  return page.locator('button[role="tab"][aria-selected="true"][data-state="active"]')
+}
+export async function sortByName(dilagbox:Locator)
+{
+  return dilagbox.locator("//span[text()='Sort By Name']")
+}
+export async function  checkrow(txt:string,page:Page) {
+   //check the table header
+  const head = page.locator('.table-header-group ') 
+  const name= head.locator('button',{hasText:txt});
     await name.click();
     const asc=page.getByText("Ascending");
     const desc=page.getByText("Descending")
@@ -60,4 +88,8 @@ export async function dataclosed(page:Page) {
        });
      });
     
+}
+export async function searchBar(page:Page,txt:string) {
+  return page.locator(`input[placeholder=${txt}]`)
+  
 }
